@@ -1,0 +1,291 @@
+﻿@model azuremvcapp1.Controllers.ReadController.ReadViewModel
+
+<h2>Read</h2>
+
+<style type="text/css">
+    hr.separate-days {
+        margin-top: 0px;
+        margin-bottom: 0px;
+        border-top: 1px solid #777;
+    }
+
+    a.MarkAsRead {
+        font-size: 1.5em;
+    }
+
+    div.tweet.even {
+        background-color: #fff;
+    }
+
+    div.tweet.odd {
+        background-color: #eee;
+    }
+
+    span.hashtagcount {
+        border-radius: 17px;
+        background-color: #eee;
+        margin-right: 6px;
+        padding-left: 5px;
+        padding-right: 2px;
+    }
+
+    span.usermentioncount {
+        border-radius: 17px;
+        background-color: #cce;
+        margin-right: 6px;
+        padding-left: 5px;
+        padding-right: 2px;
+    }
+
+    #imagelightbox {
+        position: fixed;
+        z-index: 9999;
+        -ms-touch-action: none;
+        touch-action: none;
+    }
+</style>
+
+<img src="" id="imagelightbox" />
+
+@if (Model.Exception != null)
+{
+    <section id="error" class="row">
+        <h2>@Model.Exception.Message</h2>
+        <pre>@Model.Exception.StackTrace</pre>
+    </section>
+}
+else
+{
+    int count = 0;
+    var even = false;
+    // var right = true;
+    <div>
+        <p>
+            Hashtag counts (>=2):
+            @foreach (var x in Model.HashTagCounts.OrderByDescending(htc => htc.Value).Where(htc => htc.Value > 1))
+            {
+                <span class="hashtagcount">
+                    @(x.Key)&nbsp;@(x.Value)
+                </span>
+                count++;
+            }
+            @if (count == 0)
+            {
+                <text>None</text>
+            }
+        </p>
+    </div>
+
+    count = 0;
+    <div>
+        <p>
+            Usermention counts (>=2):
+            @foreach (var x in Model.UserMentionCounts.OrderByDescending(htc => htc.Value).Where(htc => htc.Value > 1))
+            {
+                <span class="usermentioncount">
+                    @@@(x.Key)&nbsp;@(x.Value)
+                </span>
+                count++;
+            }
+            @if (count == 0)
+            {
+                <text>None</text>
+            }
+        </p>
+    </div>
+    foreach (var ft in Model.Filters)
+    {
+        var date = DateTime.MinValue;
+        var maxDate = DateTime.MinValue;
+    <div class="MarkAsReadTarget" style="margin-bottom: 10px">
+        <strong>@ft.Name</strong>
+
+        @foreach (var t in ft.Tweets.OrderBy(t2 => t2.CreatedAt))
+            {
+                maxDate = t.CreatedAt;
+                if (t.CreatedAt.Date != date)
+                {
+                    date = t.CreatedAt.Date;
+            <hr class="separate-days" />
+                }
+                var textBuilder = new System.Text.StringBuilder(t.Text);
+                bool needsBreak = false;
+            <div class="tweet @(even ? "even" : "odd")">
+
+                @* TODO:  make it so that images line up across and tweets line up downwards *@
+
+                @foreach (var img in t.Entities.MediaEntities)
+                    {
+                        const string placeholder = " [IMAGE] ";
+                        for (int i = img.Start; i <= img.End; i++)
+                        {
+                            if (i < textBuilder.Length)
+                            {
+                                if (i - img.Start < placeholder.Length)
+                                {
+                                    textBuilder[i] = placeholder[i - img.Start];
+                                }
+                                else
+                                {
+                                    textBuilder[i] = ' ';
+                                }
+                            }
+                        }
+                        // note: we are making an assumption here that they always have a :thumb size, which may not be true.
+
+                    <a class="clickToZoom" href="@img.MediaUrl" style="padding: 2px; float: right">
+                        <img src="@(img.MediaUrl):thumb" />
+                    </a>
+                        needsBreak = true;
+                        // right = !right;
+                    }
+
+                @* till now we haven't destroyed the indexes.  Now we're destroying them. *@
+                @foreach (var link in t.Entities.UrlEntities.OrderByDescending(ue => ue.Start))
+                    {
+                        var textToReplaceWith = link.ExpandedUrl;
+                        textBuilder.Remove(link.Start, link.End - link.Start);
+                        textBuilder.Insert(link.Start, String.Format("<a href=\"{0}\" target=\"blank\">{0}</a>", textToReplaceWith));
+                    }
+
+                <em>@t.User.ScreenNameResponse</em>
+                @Html.Raw(textBuilder.ToString())   @* this is a vulnerability.  we need to encode stuff as well but preserve our link. *@
+                <em title="@t.CreatedAt.ToShortDateString() @t.CreatedAt.ToShortTimeString() UTC">
+                    @TimeAgo(t.CreatedAt)
+                </em>
+                @if (needsBreak)
+                    {
+                    <br style="clear: right" />
+                    }
+
+                @{
+                        even = !even;
+                }
+
+            </div>
+                        }
+        @if (maxDate != DateTime.MinValue)
+            {
+            <div style="clear:both">
+                <a class="MarkAsRead"
+                   data-filter="@ft.Name"
+                   data-when="@maxDate.ToString("O")">
+                    Mark @ft.Name as Read.
+                </a>
+            </div>
+            }
+    </div>
+                            }
+                        }
+<section id="log">
+    <div class="row">
+        Log Messages:
+    </div>
+    <div class="row">
+        <pre>
+@Model.Log.ToString()
+</pre>
+    </div>
+</section>
+
+@functions {
+    public string TimeAgo(DateTime gtc)
+    {
+        string result = string.Empty;
+
+        var timeSpan = DateTime.UtcNow.Subtract(gtc);
+
+        if (timeSpan <= TimeSpan.FromSeconds(60))
+        {
+            result = string.Format("{0}s", timeSpan.Seconds);
+        }
+        else if (timeSpan <= TimeSpan.FromMinutes(60))
+        {
+            result = timeSpan.Minutes > 1 ?
+                String.Format("{0}m", timeSpan.Minutes) :
+                "1m";
+        }
+        else if (timeSpan <= TimeSpan.FromHours(72))
+        {
+            result = String.Format("{0:#.#}h", timeSpan.TotalHours);
+        }
+        else if (timeSpan <= TimeSpan.FromDays(30))
+        {
+            result = timeSpan.Days > 1 ?
+                String.Format("{0}d", timeSpan.Days) :
+                "1d";
+        }
+        else if (timeSpan <= TimeSpan.FromDays(365))
+        {
+            result = timeSpan.Days > 30 ?
+                String.Format("about {0} months ago", timeSpan.Days / 30) :
+                "about a month ago";
+        }
+        else
+        {
+            result = timeSpan.Days > 365 ?
+                String.Format("about {0} years ago", timeSpan.Days / 365) :
+                "about a year ago";
+        }
+
+        return result;
+    }
+}
+
+@section scripts {
+    <script type="text/javascript">
+
+        $(function () {
+            $("a.MarkAsRead").click(function () {
+                var a = $(this);
+                var when = a.data("when");
+                var filter = a.data("filter");
+                // we are going to be optimistic and assume it works.. until it doesn.t
+
+                var closest = a.closest("div.MarkAsReadTarget");
+                if (closest.length > 0) {
+                    var next = closest.next("div.MarkAsReadTarget");
+                    closest.slideUp(400, function () {
+                        if (next.length > 0) {
+                            next.get(0).scrollIntoView();
+                            window.scrollBy(0, -100); // because of header.
+                        }
+                    });
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("MarkAsRead","Read")",
+                    data: { "when": when, "filter": filter },
+                    datatype: "json",
+                    success: function (data) {
+                        if (data) {
+                            // nothing.  we already hid it.
+                        } else {
+                            // oops -- couldn't mark as read.  show it again.   except this doesn't work.
+                            closest.show();
+                            next.get(0).scrollIntoView();
+                            window.scrollBy(0, -100); // because of header.
+                            // no biggie, move on.
+                        }
+                    }
+                });
+            });
+            $("a.clickToZoom").imageLightbox(
+                {
+                    // defaults commented out
+                    // animationSpeed: 250,                    // integer;
+                    // preloadNext: true,                   // bool;            silently preload the next image
+                    enableKeyboard: true,                   // bool;            enable keyboard shortcuts (arrows Left/Right and Esc)
+                    // quitOnEnd: false,                  // bool;            quit after viewing the last image
+                    quitOnImgClick: true,                  // bool;            quit when the viewed image is clicked
+                    quitOnDocClick: true,                   // bool;            quit when anything but the viewed image is clicked
+                    //onStart: false,                  // function/bool;   calls function when the lightbox starts
+                    //onEnd: false,                  // function/bool;   calls function when the lightbox quits
+                    //onLoadStart: false,                  // function/bool;   calls function when the image load begins
+                    //onLoadEnd: false
+                });
+        });
+    </script>
+    @Scripts.Render("~/bundles/imagelightbox");
+}

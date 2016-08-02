@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>TwitFilter</h1>
+    <p class="lead">Separate the streams!</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Why?</h2>
+        <p>
+            Some of my dear followed talk more than others, who talk less.
+            <br />
+            <strong>But if they speak, its important.</strong>
+            <br />
+            <h4><strong>Now you can seperate them to see what's going on.</strong></h4>
+        </p>
+    </div>
+    <div class="col-md-4">
+        <h2>How?</h2>
+        <ol>
+            <li>@Html.ActionLink("Configure", "Index", "Configure") how to separate the streams</li>
+            <li>@Html.ActionLink("Read", "Index", "Read") the pleasantly separated streams.</li>
+            <li>Mark individual streams as read-till-that-point.</li>
+        </ol>
+        <p>It uses a single configuration textbox to make it faster, easier to add new features.</p>
+        <p>It does not store your tweets - currently, the most recent 200 are retrieved.</p>
+        <p>When you access either of the above pages, if you're not logged in, you'll first go to Twitter to get logged in.</p>
+    </div>
+    <div class="col-md-4">
+        <h2>Details</h2>
+        <ul>
+            <li>This program is bare bones - it does not attempt to interpret the stream.</li>
+            <li>
+                You can separate by: <strong>Private Lists</strong>, <strong>Usernames</strong>
+                , and (TODO)Regular Expressions, Favorite/Retweet count.  Details on the Configuration page.
+            </li>
+            <li>(TODO) It will eventually remember where you left off at each list</li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNet.Identity
+@* This is called from in the middle of a UL to do the menu. *@
+@if (Request.IsAuthenticated)
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>
+            <a href="http://twitter.com" target="_blank">Hello <span style="font-size: 1.2em">@@@User.Identity.GetUserName()</span> !</a>
+        </li>
+        <li>@Html.ActionLink("Logout","Logout","Login")</li>
+    </ul>
+}
+else
+{
+}

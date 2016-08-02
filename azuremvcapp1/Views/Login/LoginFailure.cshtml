@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>LOGIN FAILED</h2>
+
+<p>
+    So...  what happened?  Technically, I went to call 
+    <pre>var loginInfo = owinContext.Authentication.GetExternalLoginInfo();</pre> 
+    and I got back a null value - which means, for some reason, when I went to pick up your claims from twitter, I didn't get back all the way.
+</p>
+<p>
+    My attempts so far to figure this out:
+    <ol>
+        <li>
+            Per (find that link again) on stackoverflow - Force a session cookie, to see if that helps.
+            <ul><li>It seemed to! but then I messed with LinqToTwitterAuthenticationProvider and not all claims got claimed.</li>
+            <li>I put back LinqToTwitterAuthenticationProvider, and now it looks like it works!  for my wife even! </li></ul>
+        </li>
+    </ol>
+
+    So, if you're seeing this, PLEASE PLEASE PLEASE let me know.  <a href="http://twitter.com/sunjeevgulati">@@sunjeevgulati</a>
+</p>

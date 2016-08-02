@@ -1,0 +1,27 @@
+﻿@model azuremvcapp1.Controllers.ReadController.CrunchyMuchRoll
+
+<h2>Read</h2>
+
+<h3>Hang on a bit -- I have to:</h3>
+<ul>
+    <li>Get your configuration</li>
+    <li>Get your last 200 tweets</li>
+    <li>Get any LIST memberships you mention in your configuration</li>
+    <li>Put that all together and send the result back to you</li>
+</ul>
+
+<img width="300" height="300" src="~/Content/images/loader.gif" />
+
+<h3>Fun Stats</h3>
+<p>This site has been loaded @Model.LoadCount times since @Model.FirstLoad.Value.ToString("o") .  </p>
+<p>Last time it loaded, it took @Model.LastLoadTimeInMs milliseconds to get all the stuff together. </p>
+@* TODO: In the future, instead of a redirect, i want to use a XHR request and populate a div. *@
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // future: if I get parameters, pass them along too.
+            window.location.replace("/Read/Index2");
+        });
+    </script>
+}

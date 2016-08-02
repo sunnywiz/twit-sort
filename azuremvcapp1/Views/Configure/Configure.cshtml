@@ -1,0 +1,80 @@
+﻿@model azuremvcapp1.Controllers.ConfigureController.ConfigureViewModel
+
+@if (Model.Exception != null)
+{
+    <h2>@Model.Exception.Message</h2>
+    <pre>@Model.Exception.StackTrace</pre>
+}
+else
+{
+    <h2>Edit your configuration</h2>
+
+    <section id="editconfiguration" style="margin-bottom:10px">
+        @using (Html.BeginForm("Save", "Configure"))
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    @Html.TextAreaFor(m => m.Configuration, new { @cols = 120, @rows = 10 })
+                    <br />
+                    <input type="submit" value="Save and Read" />
+                </div>
+                <div class="col-md-6">
+                    <p>If you're looking at a blank configuration and would like some help, try this: </p>
+                    <p style="margin-left: 20px;">
+                        <a href="@Url.Action("CreateSampleConfiguration","Configure")">Create a Sample Configuration</a>.
+                    </p>
+                    <p>
+                        I will look at your last 200 tweets and:
+                        <ul>
+                            <li>create a list filter for every list you have defined</li>
+                            <li>move your top five common tweeters into their own groups</li>
+                            <li>TODO: move the top two hashtags into their own group.</li>
+                        </ul>
+                    </p>
+                    <p>
+                        You can click the button and see the configuration; if you don't click save, it isn't saved.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <p>If you want to clear out any memory of what has been read, click here: </p>
+                <p style="margin-left:20px">@Html.ActionLink("Clear Memory", "ClearReadUntils", "Configure")</p>
+            </div>
+        }
+    </section>
+
+    <section id="explanation" style="margin-bottom:10px">
+        <div class="row">
+            <div class="col-md-4">
+                <h4>Overview</h4>
+                <ul>
+                    <li>configuration items are one per line. </li>
+                    <li>They are parsed from top to bottom.  Last one activated wins. </li>
+                    <li>User- and List- things are done first, TODO: Regex's second</li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h4>Syntax</h4>
+                <pre>list &lt;slug&gt; &lt;filter&gt;
+user &lt;twitterusername&gt; &lt;filter&gt;
+regex &lt;regular expression&gt; &lt;filter&gt;</pre>
+                <p>&lt;slug&gt; is the list name as it shows in your list of lists.</p>
+                <p>&lt;twitterusername&gt; does not include the @@ character.</p>
+                <p>&lt;regular expression&gt; are standard .Net regular expressions</p>
+            </div>
+            <div class="col-md-4">
+                <h4>TODO</h4>
+                <ul>
+                    <li>TODO: ordering of filters being mentioned should be order of display</li>
+                    <li>TODO: do a better job of showing the filter even if empty</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+}
+<section class="row" id="log">
+    Log Messages:
+<pre>
+@Model.Log.ToString()
+</pre>
+</section>

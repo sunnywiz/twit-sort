@@ -1,0 +1,11 @@
+﻿@model Microsoft.AspNet.Identity.Owin.ExternalLoginInfo 
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>LOGIN SUCCESS!</h2>
+
+@foreach (var claim in Model.ExternalIdentity.Claims)
+{
+    <p>@claim.Type = @claim.Value</p>
+}

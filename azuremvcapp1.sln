@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azuremvcapp1", "azuremvcapp1\azuremvcapp1.csproj", "{2BBEA2F0-2776-43A9-8EC7-0BB487292A49}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{3F36C996-9DAD-40E3-B6CA-67888F1E4A62}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{D5575579-EA2A-4A69-B1D9-CC2F1183CF54}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Scripts\Deploy-AzureResourceGroup.ps1 = PublishScripts\Scripts\Deploy-AzureResourceGroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{1D5FEE77-AF6E-42AD-BF75-10ADED8C5984}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Templates\azuremvcapp1.json = PublishScripts\Templates\azuremvcapp1.json
+		PublishScripts\Templates\azuremvcapp1.param.dev.json = PublishScripts\Templates\azuremvcapp1.param.dev.json
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2BBEA2F0-2776-43A9-8EC7-0BB487292A49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BBEA2F0-2776-43A9-8EC7-0BB487292A49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BBEA2F0-2776-43A9-8EC7-0BB487292A49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BBEA2F0-2776-43A9-8EC7-0BB487292A49}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D5575579-EA2A-4A69-B1D9-CC2F1183CF54} = {3F36C996-9DAD-40E3-B6CA-67888F1E4A62}
+		{1D5FEE77-AF6E-42AD-BF75-10ADED8C5984} = {3F36C996-9DAD-40E3-B6CA-67888F1E4A62}
+	EndGlobalSection
+EndGlobal
