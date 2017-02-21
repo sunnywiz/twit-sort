@@ -109,25 +109,41 @@ else
                     date = tweet.CreatedAt.Date;
                     <hr class="separate-days" />
                 }
-                var duhTweet = tweet; 
-                if (tweet.Truncated)
+                var innerTweet = tweet;
+                var prefix = String.Empty;
+                int recurseLevel = 10;
+                if (!innerTweet.Truncated)
                 {
-                    if (!String.IsNullOrEmpty(tweet.QuotedStatus?.Text))
-                    {
-                        duhTweet = tweet.QuotedStatus; 
-                    }
-                    else if (!String.IsNullOrEmpty(tweet.RetweetedStatus?.Text))
-                    {
-                        duhTweet = tweet.RetweetedStatus;
-                    }
+                    continue;
+
                 }
-                var textBuilder = new System.Text.StringBuilder(duhTweet.Text);
+                while (recurseLevel >= 0 && innerTweet.Truncated)
+                {
+                    if (!String.IsNullOrEmpty(tweet.RetweetedStatus?.Text))
+                    {
+                        prefix += $"RT: {tweet.RetweetedStatus?.User?.ScreenNameResponse} ";
+                        innerTweet = tweet.RetweetedStatus;
+                    }
+                    else
+                        if (!String.IsNullOrEmpty(tweet.QuotedStatus?.Text))
+                    {
+                        prefix += $"Q: {tweet.QuotedStatus?.User?.ScreenNameResponse} ";
+                        innerTweet = tweet.QuotedStatus;
+                    }
+                    if (innerTweet.ID == tweet.ID)
+                    {
+                        break;  // just in case, forever loop.
+                    }
+
+                    recurseLevel--;
+                }
+                var textBuilder = new System.Text.StringBuilder(innerTweet.Text);
                 bool needsBreak = false;
                 <div class="tweet @(even ? "even" : "odd")">
 
                     @* TODO:  make it so that images line up across and tweets line up downwards *@
 
-                    @foreach (var img in duhTweet.Entities.MediaEntities)
+                    @foreach (var img in innerTweet.Entities.MediaEntities)
                     {
                         const string placeholder = " [IMAGE] ";
                         for (int i = img.Start; i <= img.End; i++)
@@ -154,17 +170,22 @@ else
                     }
 
                     @* till now we haven't destroyed the indexes.  Now we're destroying them. *@
-                    @foreach (var link in duhTweet.Entities.UrlEntities.OrderByDescending(ue => ue.Start))
+                    @foreach (var link in innerTweet.Entities.UrlEntities.OrderByDescending(ue => ue.Start))
                     {
                         var textToReplaceWith = link.ExpandedUrl;
                         textBuilder.Remove(link.Start, link.End - link.Start);
                         textBuilder.Insert(link.Start, String.Format("<a href=\"{0}\" target=\"blank\">{0}</a>", textToReplaceWith));
                     }
 
-                    <em>@duhTweet.User.ScreenNameResponse</em>
+                    @* this is NOT innerTweet, but OuterTweet: *@
+                    <em>@tweet.User.ScreenNameResponse @prefix</em>
+
+                    @* this is Inner tweet *@
                     @Html.Raw(textBuilder.ToString())   @* this is a vulnerability.  we need to encode stuff as well but preserve our link. *@
-                    <em title="@duhTweet.CreatedAt.ToShortDateString() @duhTweet.CreatedAt.ToShortTimeString() UTC">
-                        @TimeAgo(duhTweet.CreatedAt)
+
+                    @* back to Outer tweet *@
+                    <em title="@innerTweet.CreatedAt.ToShortDateString() @innerTweet.CreatedAt.ToShortTimeString() UTC">
+                        @TimeAgo(innerTweet.CreatedAt)
                     </em>
                     @if (needsBreak)
                     {
