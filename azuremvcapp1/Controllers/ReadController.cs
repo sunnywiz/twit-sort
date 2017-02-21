@@ -19,7 +19,7 @@ namespace azuremvcapp1.Controllers
         private static int _loadCount;
         private static long _lastLoadTimeInMs; 
 
-        private CommandsAndQueries _cq;
+        private CommandsAndQueries _cq; 
         public ReadController(CommandsAndQueries cq)
         {
             _cq = cq; 
