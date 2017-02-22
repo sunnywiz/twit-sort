@@ -110,25 +110,23 @@ else
                     <hr class="separate-days" />
                 }
                 var innerTweet = tweet;
-                var prefix = String.Empty;
+                var suffix = String.Empty;
                 int recurseLevel = 10;
-                if (!innerTweet.Truncated)
-                {
-                    continue;
-                }
                 var seen = new Dictionary<ulong, bool>();
                 var tweetId = tweet.ID == 0 ? tweet.StatusID : tweet.ID;
+                // https://twitter.com/aparnapkin/status/833919556355756032 *@
+                var tweetUrl = $"https://twitter.com/{tweet.User.ScreenNameResponse}/status/{tweetId}";
                 seen[tweetId] = true;
                 while (recurseLevel >= 0 && innerTweet.Truncated)
                 {
                     if (!String.IsNullOrEmpty(innerTweet.RetweetedStatus?.Text))
                     {
-                        prefix += $"⬑{innerTweet.RetweetedStatus?.User?.ScreenNameResponse} ";
+                        suffix += $"⬑{innerTweet.RetweetedStatus?.User?.ScreenNameResponse}";
                         innerTweet = innerTweet.RetweetedStatus;
                     }
                     else if (!String.IsNullOrEmpty(innerTweet.QuotedStatus?.Text))
                     {
-                        prefix += $"←{innerTweet.QuotedStatus?.User?.ScreenNameResponse} ";
+                        suffix += $"←{innerTweet.QuotedStatus?.User?.ScreenNameResponse}";
                         innerTweet = innerTweet.QuotedStatus;
                     }
                     var innerTweetId = innerTweet.ID == 0 ? innerTweet.StatusID : innerTweet.ID;
@@ -140,7 +138,7 @@ else
                     recurseLevel--;
                 }
                 var textBuilder = new System.Text.StringBuilder(innerTweet.Text);
-                    bool needsBreak = false;
+                bool needsBreak = false;
                 <div class="tweet @(even ? "even" : "odd")">
 
                     @* TODO:  make it so that images line up across and tweets line up downwards *@
@@ -180,12 +178,26 @@ else
                     }
 
                     @* this is NOT innerTweet, but OuterTweet: *@
-                    <em>@tweet.User.ScreenNameResponse @prefix</em>
+                    <em>@tweet.User.ScreenNameResponse @suffix</em>
 
                     @* this is Inner tweet *@
                     @Html.Raw(textBuilder.ToString())   @* this is a vulnerability.  we need to encode stuff as well but preserve our link. *@
-
+                    <em>
+                        @if ((innerTweet.FavoriteCount ?? 0) > 0)
+                        {
+                            <text>♡</text>
+                            @innerTweet.FavoriteCount
+                        }
+                        @if ((innerTweet.RetweetCount > 0))
+                        {
+                            <text>⬑</text>
+                            @innerTweet.RetweetCount
+                        }
+                    </em>
                     @* back to Outer tweet *@
+                    <em>
+                        <a href="@tweetUrl" target="_">🔗</a>
+                    </em>
                     <em title="@innerTweet.CreatedAt.ToShortDateString() @innerTweet.CreatedAt.ToShortTimeString() UTC">
                         @TimeAgo(innerTweet.CreatedAt)
                     </em>
