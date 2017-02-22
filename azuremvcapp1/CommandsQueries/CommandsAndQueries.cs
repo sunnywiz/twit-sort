@@ -126,10 +126,11 @@ namespace azuremvcapp1.CommandsQueries
         public IQueryable<Status> GetHomeTweetsQueryable(TwitterContext twitterCtx)
         {
             return (from tweet in twitterCtx.Status
-                    where tweet.Type == StatusType.Home
-                    && tweet.Count == 200
-                    && tweet.IncludeContributorDetails == true
-                    && tweet.IncludeEntities==true
+                where tweet.Type == StatusType.Home
+                      && tweet.Count == 200
+                      && tweet.IncludeContributorDetails == true
+                      && tweet.IncludeEntities == true
+                      && tweet.IncludeRetweets == true
                     select tweet);
         }
 

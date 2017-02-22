@@ -1,4 +1,5 @@
-﻿@model azuremvcapp1.Controllers.ReadController.ReadViewModel
+﻿@using System.Diagnostics
+@model azuremvcapp1.Controllers.ReadController.ReadViewModel
 
 <h2>Read</h2>
 
@@ -97,24 +98,52 @@ else
     {
         var date = DateTime.MinValue;
         var maxDate = DateTime.MinValue;
-    <div class="MarkAsReadTarget" style="margin-bottom: 10px">
-        <strong>@ft.Name</strong>
+        <div class="MarkAsReadTarget" style="margin-bottom: 10px">
+            <strong>@ft.Name</strong>
 
-        @foreach (var t in ft.Tweets.OrderBy(t2 => t2.CreatedAt))
+            @foreach (var tweet in ft.Tweets.OrderBy(t2 => t2.CreatedAt))
             {
-                maxDate = t.CreatedAt;
-                if (t.CreatedAt.Date != date)
+                maxDate = tweet.CreatedAt;
+                if (tweet.CreatedAt.Date != date)
                 {
-                    date = t.CreatedAt.Date;
-            <hr class="separate-days" />
+                    date = tweet.CreatedAt.Date;
+                    <hr class="separate-days" />
                 }
-                var textBuilder = new System.Text.StringBuilder(t.Text);
+                var innerTweet = tweet;
+                var suffix = String.Empty;
+                int recurseLevel = 10;
+                var seen = new Dictionary<ulong, bool>();
+                var tweetId = tweet.ID == 0 ? tweet.StatusID : tweet.ID;
+                // https://twitter.com/aparnapkin/status/833919556355756032 *@
+                var tweetUrl = $"https://twitter.com/{tweet.User.ScreenNameResponse}/status/{tweetId}";
+                seen[tweetId] = true;
+                while (recurseLevel >= 0 && innerTweet.Truncated)
+                {
+                    if (!String.IsNullOrEmpty(innerTweet.RetweetedStatus?.Text))
+                    {
+                        suffix += $"⬑{innerTweet.RetweetedStatus?.User?.ScreenNameResponse}";
+                        innerTweet = innerTweet.RetweetedStatus;
+                    }
+                    else if (!String.IsNullOrEmpty(innerTweet.QuotedStatus?.Text))
+                    {
+                        suffix += $"←{innerTweet.QuotedStatus?.User?.ScreenNameResponse}";
+                        innerTweet = innerTweet.QuotedStatus;
+                    }
+                    var innerTweetId = innerTweet.ID == 0 ? innerTweet.StatusID : innerTweet.ID;
+                    if (seen.ContainsKey(innerTweetId))
+                    {
+                        break;
+                    }
+                    seen[innerTweetId] = true;
+                    recurseLevel--;
+                }
+                var textBuilder = new System.Text.StringBuilder(innerTweet.Text);
                 bool needsBreak = false;
-            <div class="tweet @(even ? "even" : "odd")">
+                <div class="tweet @(even ? "even" : "odd")">
 
-                @* TODO:  make it so that images line up across and tweets line up downwards *@
+                    @* TODO:  make it so that images line up across and tweets line up downwards *@
 
-                @foreach (var img in t.Entities.MediaEntities)
+                    @foreach (var img in innerTweet.Entities.MediaEntities)
                     {
                         const string placeholder = " [IMAGE] ";
                         for (int i = img.Start; i <= img.End; i++)
@@ -133,48 +162,67 @@ else
                         }
                         // note: we are making an assumption here that they always have a :thumb size, which may not be true.
 
-                    <a class="clickToZoom" href="@img.MediaUrl" style="padding: 2px; float: right">
-                        <img src="@(img.MediaUrl):thumb" />
-                    </a>
+                        <a class="clickToZoom" href="@img.MediaUrl" style="padding: 2px; float: right">
+                            <img src="@(img.MediaUrl):thumb" />
+                        </a>
                         needsBreak = true;
                         // right = !right;
                     }
 
-                @* till now we haven't destroyed the indexes.  Now we're destroying them. *@
-                @foreach (var link in t.Entities.UrlEntities.OrderByDescending(ue => ue.Start))
+                    @* till now we haven't destroyed the indexes.  Now we're destroying them. *@
+                    @foreach (var link in innerTweet.Entities.UrlEntities.OrderByDescending(ue => ue.Start))
                     {
                         var textToReplaceWith = link.ExpandedUrl;
                         textBuilder.Remove(link.Start, link.End - link.Start);
                         textBuilder.Insert(link.Start, String.Format("<a href=\"{0}\" target=\"blank\">{0}</a>", textToReplaceWith));
                     }
 
-                <em>@t.User.ScreenNameResponse</em>
-                @Html.Raw(textBuilder.ToString())   @* this is a vulnerability.  we need to encode stuff as well but preserve our link. *@
-                <em title="@t.CreatedAt.ToShortDateString() @t.CreatedAt.ToShortTimeString() UTC">
-                    @TimeAgo(t.CreatedAt)
-                </em>
-                @if (needsBreak)
+                    @* this is NOT innerTweet, but OuterTweet: *@
+                    <em>@tweet.User.ScreenNameResponse @suffix</em>
+
+                    @* this is Inner tweet *@
+                    @Html.Raw(textBuilder.ToString())   @* this is a vulnerability.  we need to encode stuff as well but preserve our link. *@
+                    <em>
+                        @if ((innerTweet.FavoriteCount ?? 0) > 0)
+                        {
+                            <text>♡</text>
+                            @innerTweet.FavoriteCount
+                        }
+                        @if ((innerTweet.RetweetCount > 0))
+                        {
+                            <text>⬑</text>
+                            @innerTweet.RetweetCount
+                        }
+                    </em>
+                    @* back to Outer tweet *@
+                    <em>
+                        <a href="@tweetUrl" target="_">🔗</a>
+                    </em>
+                    <em title="@innerTweet.CreatedAt.ToShortDateString() @innerTweet.CreatedAt.ToShortTimeString() UTC">
+                        @TimeAgo(innerTweet.CreatedAt)
+                    </em>
+                    @if (needsBreak)
                     {
-                    <br style="clear: right" />
+                        <br style="clear: right" />
                     }
 
-                @{
+                    @{
                         even = !even;
-                }
+                    }
 
-            </div>
+                </div>
                         }
-        @if (maxDate != DateTime.MinValue)
+            @if (maxDate != DateTime.MinValue)
             {
-            <div style="clear:both">
-                <a class="MarkAsRead"
-                   data-filter="@ft.Name"
-                   data-when="@maxDate.ToString("O")">
-                    Mark @ft.Name as Read.
-                </a>
-            </div>
+                <div style="clear:both">
+                    <a class="MarkAsRead"
+                       data-filter="@ft.Name"
+                       data-when="@maxDate.ToString("O")">
+                        Mark @ft.Name as Read.
+                    </a>
+                </div>
             }
-    </div>
+        </div>
                             }
                         }
 <section id="log">
