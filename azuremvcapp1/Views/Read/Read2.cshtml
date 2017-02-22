@@ -115,30 +115,32 @@ else
                 if (!innerTweet.Truncated)
                 {
                     continue;
-
                 }
+                var seen = new Dictionary<ulong, bool>();
+                var tweetId = tweet.ID == 0 ? tweet.StatusID : tweet.ID;
+                seen[tweetId] = true;
                 while (recurseLevel >= 0 && innerTweet.Truncated)
                 {
-                    if (!String.IsNullOrEmpty(tweet.RetweetedStatus?.Text))
+                    if (!String.IsNullOrEmpty(innerTweet.RetweetedStatus?.Text))
                     {
-                        prefix += $"RT: {tweet.RetweetedStatus?.User?.ScreenNameResponse} ";
-                        innerTweet = tweet.RetweetedStatus;
+                        prefix += $"⬑{innerTweet.RetweetedStatus?.User?.ScreenNameResponse} ";
+                        innerTweet = innerTweet.RetweetedStatus;
                     }
-                    else
-                        if (!String.IsNullOrEmpty(tweet.QuotedStatus?.Text))
+                    else if (!String.IsNullOrEmpty(innerTweet.QuotedStatus?.Text))
                     {
-                        prefix += $"Q: {tweet.QuotedStatus?.User?.ScreenNameResponse} ";
-                        innerTweet = tweet.QuotedStatus;
+                        prefix += $"←{innerTweet.QuotedStatus?.User?.ScreenNameResponse} ";
+                        innerTweet = innerTweet.QuotedStatus;
                     }
-                    if (innerTweet.ID == tweet.ID)
+                    var innerTweetId = innerTweet.ID == 0 ? innerTweet.StatusID : innerTweet.ID;
+                    if (seen.ContainsKey(innerTweetId))
                     {
-                        break;  // just in case, forever loop.
+                        break;
                     }
-
+                    seen[innerTweetId] = true;
                     recurseLevel--;
                 }
                 var textBuilder = new System.Text.StringBuilder(innerTweet.Text);
-                bool needsBreak = false;
+                    bool needsBreak = false;
                 <div class="tweet @(even ? "even" : "odd")">
 
                     @* TODO:  make it so that images line up across and tweets line up downwards *@
