@@ -121,12 +121,12 @@ else
                 {
                     if (!String.IsNullOrEmpty(innerTweet.RetweetedStatus?.Text))
                     {
-                        suffix += $"⬑{innerTweet.RetweetedStatus?.User?.ScreenNameResponse}";
+                        suffix += $"RT {innerTweet.RetweetedStatus?.User?.ScreenNameResponse}";
                         innerTweet = innerTweet.RetweetedStatus;
                     }
                     else if (!String.IsNullOrEmpty(innerTweet.QuotedStatus?.Text))
                     {
-                        suffix += $"←{innerTweet.QuotedStatus?.User?.ScreenNameResponse}";
+                        suffix += $"< {innerTweet.QuotedStatus?.User?.ScreenNameResponse}";
                         innerTweet = innerTweet.QuotedStatus;
                     }
                     var innerTweetId = innerTweet.ID == 0 ? innerTweet.StatusID : innerTweet.ID;
@@ -185,18 +185,16 @@ else
                     <em>
                         @if ((innerTweet.FavoriteCount ?? 0) > 0)
                         {
-                            <text>♡</text>
-                            @innerTweet.FavoriteCount
+                            <text>@(innerTweet.FavoriteCount)f</text>
                         }
                         @if ((innerTweet.RetweetCount > 0))
                         {
-                            <text>⬑</text>
-                            @innerTweet.RetweetCount
+                            <text>@(innerTweet.RetweetCount)rt</text>
                         }
                     </em>
                     @* back to Outer tweet *@
                     <em>
-                        <a href="@tweetUrl" target="_">🔗</a>
+                        <a href="@tweetUrl" target="_">#</a>
                     </em>
                     <em title="@innerTweet.CreatedAt.ToShortDateString() @innerTweet.CreatedAt.ToShortTimeString() UTC">
                         @TimeAgo(innerTweet.CreatedAt)
